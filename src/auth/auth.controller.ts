@@ -1,21 +1,18 @@
-import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  Param,
-  Patch,
-  Post,
-} from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post } from '@nestjs/common';
 import { AuthService } from './auth.service';
 
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
-  @Get('users/:id')
-  getUser(@Param('id') id: string) {
-    return this.authService.getUser(id);
+  @Get('users')
+  getAllUser() {
+    return this.authService.getAllUser();
+  }
+
+  @Get('users/:userId')
+  getUser(@Param('userId') userId: string) {
+    return this.authService.getUser(userId);
   }
 
   @Get('users/:email/exists')
@@ -26,11 +23,6 @@ export class AuthController {
   @Get('users/email/:email')
   getUserByEmail(@Param('email') email: string) {
     return this.authService.getUserByEmail(email);
-  }
-
-  @Patch('users/email/:email')
-  patchUserByEmail(@Param('email') email: string, @Body() user: any) {
-    console.log(email, user);
   }
 
   @Post('users')

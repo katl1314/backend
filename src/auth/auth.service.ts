@@ -10,10 +10,14 @@ export class AuthService {
     private readonly authRepo: Repository<AuthModel>,
   ) {}
 
-  async getUser(id: string) {
+  async getAllUser() {
+    return await this.authRepo.find();
+  }
+
+  async getUser(userId: string) {
     const user = await this.authRepo.findOne({
       where: {
-        id: id,
+        user_id: userId,
       },
     });
 
@@ -38,13 +42,11 @@ export class AuthService {
   }
 
   async hasUser(email: string) {
-    const user = await this.authRepo.findOne({
+    return await this.authRepo.exists({
       where: {
-        email: email,
+        email,
       },
     });
-
-    return !!user;
   }
 
   async postUser(body: any) {
