@@ -1,13 +1,17 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { AuthModel } from './entity/auth.entity';
+import { UserModel } from './entity/user.entity';
 import { Repository } from 'typeorm';
+import { BlogService } from '../blog/blog.service';
+import { CreateBlogDTO } from '../blog/dto/create-blog-dto';
+import { CreateUserDto } from './dto/create-user-dto';
 
 @Injectable()
 export class AuthService {
   constructor(
-    @InjectRepository(AuthModel)
-    private readonly authRepo: Repository<AuthModel>,
+    @InjectRepository(UserModel)
+    private readonly authRepo: Repository<UserModel>,
+    private readonly blogService: BlogService,
   ) {}
 
   async getAllUser() {
@@ -18,6 +22,9 @@ export class AuthService {
     const user = await this.authRepo.findOne({
       where: {
         user_id: userId,
+      },
+      relations: {
+        blog: true,
       },
     });
 
@@ -41,6 +48,9 @@ export class AuthService {
     return user;
   }
 
+  /*
+   * 사용자 중복 확인
+   */
   async hasUser(email: string) {
     return await this.authRepo.exists({
       where: {
@@ -49,9 +59,18 @@ export class AuthService {
     });
   }
 
-  async postUser(body: any) {
-    const newUser = this.authRepo.create(body);
-    return await this.authRepo.save(newUser);
+  /*
+   * 사용자 추가
+   */
+  async postUser(body: CreateUserDto) {
+    // 먼저 사용자 엔티티 인스턴스 생성
+    const user = this.authRepo.create(body);
+    const blog: CreateBlogDTO = {
+      user,
+      title: `${user.user_id}.log`,
+    };
+    user.blog = await this.blogService.createBlog(blog); // 블로그 생성...
+    return await this.authRepo.save(user);
   }
 
   async deleteUser(userId: string) {

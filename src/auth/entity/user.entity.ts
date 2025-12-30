@@ -3,9 +3,12 @@ import {
   CreateDateColumn,
   DeleteDateColumn,
   Entity,
+  JoinColumn,
+  OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { BlogModel } from '../../blog/entity/blog.entity';
 
 export enum ProviderEnum {
   'google', // 구글
@@ -29,7 +32,7 @@ export enum ProviderEnum {
   CONSTRAINT profiles_id_fkey FOREIGN KEY (id) REFERENCES auth.users(id)
  */
 @Entity()
-export class AuthModel {
+export class UserModel {
   // 사용자 고유 식별자
   @PrimaryGeneratedColumn('uuid')
   id: string;
@@ -59,6 +62,10 @@ export class AuthModel {
 
   @Column({ enum: ProviderEnum, type: 'enum', default: ProviderEnum.email })
   provider: ProviderEnum;
+
+  @OneToOne(() => BlogModel, (blog) => blog.user, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'blog_id' })
+  blog: BlogModel;
 
   @CreateDateColumn()
   created_at: Date;
