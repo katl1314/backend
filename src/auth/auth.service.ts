@@ -76,7 +76,4 @@ export class AuthService {
   async deleteUser(userId: string) {
     return await this.authRepo.delete({ id: userId });
   }
-
-  // 리소스 일부 수정 (부분 업데이트)
-  async patchUser() {}
 }

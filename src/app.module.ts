@@ -7,6 +7,7 @@ import { UserModel } from './auth/entity/user.entity';
 import { ConfigModule } from '@nestjs/config';
 import { BlogModule } from './blog/blog.module';
 import { BlogModel } from './blog/entity/blog.entity';
+import { PostModule } from './post/post.module';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { BlogModel } from './blog/entity/blog.entity';
     }),
     AuthModule,
     BlogModule,
+    PostModule,
   ],
   controllers: [AppController],
   providers: [AppService],
