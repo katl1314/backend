@@ -12,6 +12,7 @@ import {
 } from 'typeorm';
 import { UserModel } from '../../auth/entity/user.entity';
 import { PostLikeModel } from './post_like.entity';
+import { CommentModel } from '../../comment/entity/comment.entity';
 
 @Entity()
 @Unique(['user_id', 'path'])
@@ -31,6 +32,10 @@ export class PostModel {
   // 좋아요...
   @OneToMany(() => PostLikeModel, (like) => like.post)
   likes: PostLikeModel[];
+
+  // 댓글 목록
+  @OneToMany(() => CommentModel, (comment) => comment.post)
+  comments: CommentModel[];
 
   @Column()
   path: string;

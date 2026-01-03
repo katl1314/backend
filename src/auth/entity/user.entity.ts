@@ -2,6 +2,7 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  ManyToOne,
   OneToMany,
   OneToOne,
   PrimaryGeneratedColumn,
@@ -10,6 +11,7 @@ import {
 import { BlogModel } from '../../blog/entity/blog.entity';
 import { PostModel } from '../../post/entity/post.entity';
 import { PostLikeModel } from '../../post/entity/post_like.entity';
+import { CommentModel } from '../../comment/entity/comment.entity';
 
 export enum ProviderEnum {
   google = 'GOOGLE', // 구글
@@ -48,7 +50,7 @@ export class UserModel {
   @Column({ type: 'enum', enum: StatusEnum, default: StatusEnum.ACTIVE })
   status: StatusEnum;
 
-  @Column({ enum: ProviderEnum, type: 'enum', default: ProviderEnum.email })
+  @Column({ enum: ProviderEnum, type: 'enum' })
   provider: ProviderEnum;
 
   @OneToOne(() => BlogModel, (blog) => blog.user, { onDelete: 'CASCADE' })
@@ -59,6 +61,9 @@ export class UserModel {
 
   @OneToMany(() => PostLikeModel, (like) => like.user)
   likes: PostLikeModel[];
+
+  @OneToMany(() => CommentModel, (comment) => comment.user)
+  comments: CommentModel;
 
   @CreateDateColumn()
   created_at: Date;

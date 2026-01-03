@@ -8,6 +8,10 @@ import { ConfigModule } from '@nestjs/config';
 import { BlogModule } from './blog/blog.module';
 import { BlogModel } from './blog/entity/blog.entity';
 import { PostModule } from './post/post.module';
+import { CommentModule } from './comment/comment.module';
+import { PostModel } from './post/entity/post.entity';
+import { CommentModel } from './comment/entity/comment.entity';
+import { PostLikeModel } from './post/entity/post_like.entity';
 
 @Module({
   imports: [
@@ -22,12 +26,13 @@ import { PostModule } from './post/post.module';
       database: process.env.DB_NAME,
       username: process.env.DB_USERNAME,
       password: process.env.DB_PASSWORD,
-      entities: [UserModel, BlogModel],
+      entities: [UserModel, BlogModel, PostModel, CommentModel, PostLikeModel],
       synchronize: true,
     }),
     AuthModule,
     BlogModule,
     PostModule,
+    CommentModule,
   ],
   controllers: [AppController],
   providers: [AppService],
