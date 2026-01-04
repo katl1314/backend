@@ -2,27 +2,26 @@ import {
   Column,
   CreateDateColumn,
   Entity,
-  ManyToOne,
   OneToMany,
   OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { BlogModel } from '../../blog/entity/blog.entity';
-import { PostModel } from '../../post/entity/post.entity';
 import { PostLikeModel } from '../../post/entity/post_like.entity';
 import { CommentModel } from '../../comment/entity/comment.entity';
+import { BlogModel } from '../../blog/entity/blog.entity';
+import { PostModel } from '../../post/entity/post.entity';
 
 export enum ProviderEnum {
+  email = 'EMAIL', // 이메일
   google = 'GOOGLE', // 구글
   github = 'GITHUB', // 깃헙
-  email = 'EMAIL', // 이메일
 }
 
 export enum StatusEnum {
-  ACTIVE = 'ACTIVE', // 활성
-  WITHDRAWN = 'WITHDRAWN', // 탈퇴
-  BLOCKED = 'BLOCKED', // 차단
+  active = 'ACTIVE', // 활성
+  blocked = 'BLOCKED', // 차단
+  withdrawn = 'WITHDRAWN', // 탈퇴
 }
 
 @Entity()
@@ -47,10 +46,10 @@ export class UserModel {
   @Column()
   avatar_url: string;
 
-  @Column({ type: 'enum', enum: StatusEnum, default: StatusEnum.ACTIVE })
+  @Column({ type: 'enum', enum: StatusEnum, default: StatusEnum.active })
   status: StatusEnum;
 
-  @Column({ enum: ProviderEnum, type: 'enum' })
+  @Column({ enum: ProviderEnum, type: 'enum', default: ProviderEnum.email })
   provider: ProviderEnum;
 
   @OneToOne(() => BlogModel, (blog) => blog.user, { onDelete: 'CASCADE' })

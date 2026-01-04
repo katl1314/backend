@@ -22,13 +22,13 @@ export class CommentModel {
   @Column()
   user_id: string;
 
-  @Column()
+  @Column({ type: 'varchar', length: 100 })
   content: string;
 
-  @Column()
+  @Column({ type: 'int' })
   level: number;
 
-  @Column()
+  @Column({ type: 'uuid' })
   pid: string;
 
   // user, post 관계 설정

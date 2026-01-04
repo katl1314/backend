@@ -62,14 +62,9 @@ export class AuthService {
   /*
    * 사용자 추가
    */
-  async postUser(body: CreateUserDto) {
+  async postUser(body: CreateUserDto & CreateBlogDTO) {
     // 먼저 사용자 엔티티 인스턴스 생성
     const user = this.authRepo.create(body);
-    const blog: CreateBlogDTO = {
-      user,
-      title: `${user.user_id}.log`,
-    };
-    user.blog = await this.blogService.createBlog(blog); // 블로그 생성...
     return await this.authRepo.save(user);
   }
 
