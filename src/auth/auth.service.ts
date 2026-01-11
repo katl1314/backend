@@ -1,25 +1,30 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { UserModel } from './entity/user.entity';
-import { Repository } from 'typeorm';
-import { BlogService } from '../blog/blog.service';
 import { CreateBlogDTO } from '../blog/dto/create-blog-dto';
 import { CreateUserDto } from './dto/create-user-dto';
+import { InjectRepository } from '@nestjs/typeorm';
+import { QueryRunner, Repository } from 'typeorm';
+import { UserModel } from './entity/user.entity';
+import { isEmpty } from '../common/util/util';
 
 @Injectable()
 export class AuthService {
   constructor(
     @InjectRepository(UserModel)
-    private readonly authRepo: Repository<UserModel>,
-    private readonly blogService: BlogService,
+    private readonly authRepository: Repository<UserModel>,
   ) {}
 
+  getRepository(qr?: QueryRunner) {
+    return isEmpty(qr)
+      ? this.authRepository
+      : qr.manager.getRepository<UserModel>(UserModel);
+  }
+
   async getAllUser() {
-    return await this.authRepo.find();
+    return await this.authRepository.find();
   }
 
   async getUser(userId: string) {
-    const user = await this.authRepo.findOne({
+    const user = await this.authRepository.findOne({
       where: {
         user_id: userId,
       },
@@ -36,9 +41,12 @@ export class AuthService {
   }
 
   async getUserByEmail(email: string) {
-    const user = await this.authRepo.findOne({
+    const user = await this.authRepository.findOne({
       where: {
         email,
+      },
+      relations: {
+        blog: true,
       },
     });
     if (!user) {
@@ -52,23 +60,22 @@ export class AuthService {
    * 사용자 중복 확인
    */
   async hasUser(email: string) {
-    return await this.authRepo.exists({
+    return await this.authRepository.exists({
       where: {
         email,
       },
     });
   }
 
-  /*
-   * 사용자 추가
-   */
-  async postUser(body: CreateUserDto & CreateBlogDTO) {
+  async createUser(user: CreateUserDto, qr?: QueryRunner) {
     // 먼저 사용자 엔티티 인스턴스 생성
-    const user = this.authRepo.create(body);
-    return await this.authRepo.save(user);
+    const authRepo = this.getRepository(qr);
+    const newUser = authRepo.create(user);
+    await authRepo.save(newUser);
+    return newUser;
   }
 
   async deleteUser(userId: string) {
-    return await this.authRepo.delete({ id: userId });
+    return await this.authRepository.delete({ id: userId });
   }
 }
