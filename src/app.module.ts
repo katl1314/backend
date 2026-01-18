@@ -1,17 +1,19 @@
-import { Module } from '@nestjs/common';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
-import { AuthModule } from './auth/auth.module';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { UserModel } from './auth/entity/user.entity';
-import { ConfigModule } from '@nestjs/config';
-import { BlogModule } from './blog/blog.module';
-import { BlogModel } from './blog/entity/blog.entity';
-import { PostModule } from './post/post.module';
-import { CommentModule } from './comment/comment.module';
-import { PostModel } from './post/entity/post.entity';
 import { CommentModel } from './comment/entity/comment.entity';
 import { PostLikeModel } from './post/entity/post_like.entity';
+import { CommentModule } from './comment/comment.module';
+import { UserModel } from './auth/entity/user.entity';
+import { BlogModel } from './blog/entity/blog.entity';
+import { PostModel } from './post/entity/post.entity';
+import { TagModel } from './tag/entity/tag.entity';
+import { AppController } from './app.controller';
+import { AuthModule } from './auth/auth.module';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { BlogModule } from './blog/blog.module';
+import { PostModule } from './post/post.module';
+import { ConfigModule } from '@nestjs/config';
+import { TagModule } from './tag/tag.module';
+import { AppService } from './app.service';
+import { Module } from '@nestjs/common';
 
 @Module({
   imports: [
@@ -26,13 +28,21 @@ import { PostLikeModel } from './post/entity/post_like.entity';
       database: process.env.DB_NAME,
       username: process.env.DB_USERNAME,
       password: process.env.DB_PASSWORD,
-      entities: [UserModel, BlogModel, PostModel, CommentModel, PostLikeModel],
+      entities: [
+        UserModel,
+        BlogModel,
+        PostModel,
+        CommentModel,
+        PostLikeModel,
+        TagModel,
+      ],
       synchronize: true,
     }),
     AuthModule,
     BlogModule,
     PostModule,
     CommentModule,
+    TagModule,
   ],
   controllers: [AppController],
   providers: [AppService],

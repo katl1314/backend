@@ -1,19 +1,25 @@
 import {
   Body,
   Controller,
-  Delete,
   Get,
   Param,
   Post,
   Req,
   UseInterceptors,
 } from '@nestjs/common';
-import { AuthService } from './auth.service';
 import { TransactionInterceptor } from '../common/interceptor/transaction.interceptor';
-import { QueryRunner } from 'typeorm';
-import { CreateUserDto } from './dto/create-user-dto';
 import { CreateBlogDTO } from '../blog/dto/create-blog-dto';
+import { CreateUserDto } from './dto/create-user-dto';
 import { BlogService } from '../blog/blog.service';
+import { AuthService } from './auth.service';
+import { QueryRunner } from 'typeorm';
+
+interface User {
+  id?: string;
+  name?: string | null;
+  email?: string | null;
+  image?: string | null;
+}
 
 @Controller('auth')
 export class AuthController {
@@ -21,6 +27,17 @@ export class AuthController {
     private readonly authService: AuthService,
     private readonly blogService: BlogService,
   ) {}
+
+  @Post('signIn')
+  async signIn(@Body() payload: User) {
+    const { user_id } = await this.authService.getUserByEmail(payload.email!);
+    const { accessToken, refreshToken } = await this.authService.sign(payload);
+    return {
+      accessToken,
+      refreshToken,
+      userId: user_id,
+    };
+  }
 
   @Get('users')
   getAllUser() {
@@ -52,10 +69,5 @@ export class AuthController {
     body.blog.user = user;
     const blog = await this.blogService.createBlog(body.blog, req.qr);
     return { user, blog };
-  }
-
-  @Delete('users/:id')
-  deleteUser(@Param('id') id: string) {
-    return this.authService.deleteUser(id);
   }
 }

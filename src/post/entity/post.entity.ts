@@ -4,6 +4,8 @@ import {
   DeleteDateColumn,
   Entity,
   JoinColumn,
+  JoinTable,
+  ManyToMany,
   ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
@@ -13,6 +15,7 @@ import {
 import { UserModel } from '../../auth/entity/user.entity';
 import { PostLikeModel } from './post_like.entity';
 import { CommentModel } from '../../comment/entity/comment.entity';
+import { TagModel } from '../../tag/entity/tag.entity';
 
 @Entity()
 @Unique(['user_id', 'path'])
@@ -54,6 +57,14 @@ export class PostModel {
 
   @Column({ type: 'boolean', default: true })
   visibility: boolean; // true이면 보여준다.
+
+  @ManyToMany(() => TagModel, (tag) => tag.posts, { onDelete: 'CASCADE' })
+  @JoinTable({
+    name: 'post_tags',
+    joinColumn: { name: 'post_id', referencedColumnName: 'id' },
+    inverseJoinColumn: { name: 'tag_id', referencedColumnName: 'id' },
+  })
+  tags: TagModel[];
 
   @CreateDateColumn()
   created_at: Date;
