@@ -14,6 +14,7 @@ import { ConfigModule } from '@nestjs/config';
 import { TagModule } from './tag/tag.module';
 import { AppService } from './app.service';
 import { Module } from '@nestjs/common';
+import { CommonModule } from './common/common.module';
 
 @Module({
   imports: [
@@ -43,6 +44,7 @@ import { Module } from '@nestjs/common';
     PostModule,
     CommentModule,
     TagModule,
+    CommonModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -21,41 +21,41 @@ import { TagModel } from '../../tag/entity/tag.entity';
 @Unique(['user_id', 'path'])
 export class PostModel {
   // 게시글 식별자
-  @PrimaryGeneratedColumn('uuid')
-  id: string;
+  @PrimaryGeneratedColumn('increment')
+  id: number;
 
-  @Column()
+  @Column({ comment: '작성자' })
   user_id: string;
 
-  // 작성자
   @ManyToOne(() => UserModel, (user) => user.posts)
   @JoinColumn({ name: 'user_id' })
   user: UserModel;
 
-  // 좋아요...
   @OneToMany(() => PostLikeModel, (like) => like.post)
   likes: PostLikeModel[];
 
-  // 댓글 목록
   @OneToMany(() => CommentModel, (comment) => comment.post)
   comments: CommentModel[];
 
-  @Column()
+  @Column({ comment: '경로' })
   path: string;
 
-  @Column({ type: 'varchar', length: 40 })
+  @Column({ type: 'varchar', length: 40, comment: '제목' })
   title: string;
 
-  @Column({ type: 'varchar', length: 100 })
+  @Column({ type: 'varchar', length: 100, comment: '요약' })
   summary: string;
 
-  @Column()
+  @Column({ comment: '내용' })
+  content: string;
+
+  @Column({ comment: '썸네일' })
   thumbnail: string;
 
-  @Column()
+  @Column({ comment: '상태' })
   status: string; // enum
 
-  @Column({ type: 'boolean', default: true })
+  @Column({ type: 'boolean', default: true, comment: '공개여부' })
   visibility: boolean; // true이면 보여준다.
 
   @ManyToMany(() => TagModel, (tag) => tag.posts, { onDelete: 'CASCADE' })
@@ -66,12 +66,12 @@ export class PostModel {
   })
   tags: TagModel[];
 
-  @CreateDateColumn()
+  @CreateDateColumn({ comment: '작성일자' })
   created_at: Date;
 
-  @UpdateDateColumn()
+  @UpdateDateColumn({ comment: '수정일자' })
   updated_at: Date;
 
-  @DeleteDateColumn()
+  @DeleteDateColumn({ comment: '삭제일자' })
   deleted_at: Date;
 }

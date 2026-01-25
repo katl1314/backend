@@ -7,6 +7,8 @@ async function bootstrap() {
     credentials: true, // 쿠키 허용 필수
     origin: 'http://localhost:3000', // 클라이언트 주소
   });
+
+  // app.setGlobalPrefix('v1');
   await app.listen(3001);
 }
 bootstrap();

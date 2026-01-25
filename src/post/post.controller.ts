@@ -1,13 +1,17 @@
 import {
+  BadRequestException,
   Body,
   Controller,
+  Get,
+  ParseIntPipe,
   Post,
+  Query,
   Req,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import { TransactionInterceptor } from '../common/interceptor/transaction.interceptor';
-import { AccessTokenGuard } from '../auth/guard/access-token.guard';
+import { AccessTokenGuard } from '../auth/guard/bearer-token.guard';
 import { PostService } from './post.service';
 import { QueryRunner } from 'typeorm';
 import { TagService } from '../tag/tag.service';
@@ -24,10 +28,19 @@ export class PostController {
   @UseGuards(AccessTokenGuard)
   @UseInterceptors(TransactionInterceptor)
   createPost(
-    @Req() req: Request & { qr: QueryRunner },
+    @Req() req: Request & { qr: QueryRunner; user: { id: string } },
     @Body() post: CreatePostDto & { tags: string[] },
   ) {
-    const { ...others } = post;
-    return this.postService.createPost(others, req.qr);
+    try {
+      const newPost = { ...post, user_id: req.user.id };
+      return this.postService.create(newPost, req.qr);
+    } catch {
+      throw new BadRequestException('이미 존재하는 포스트입니다.');
+    }
+  }
+
+  @Get()
+  getPosts(@Query('cursor', ParseIntPipe) cursor: number) {
+    return this.postService.getPosts({ cursor, take: 10 });
   }
 }

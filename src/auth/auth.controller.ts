@@ -5,6 +5,7 @@ import {
   Param,
   Post,
   Req,
+  UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import { TransactionInterceptor } from '../common/interceptor/transaction.interceptor';
@@ -13,6 +14,7 @@ import { CreateUserDto } from './dto/create-user-dto';
 import { BlogService } from '../blog/blog.service';
 import { AuthService } from './auth.service';
 import { QueryRunner } from 'typeorm';
+import { AccessTokenGuard } from './guard/bearer-token.guard';
 
 interface User {
   id?: string;
@@ -28,16 +30,25 @@ export class AuthController {
     private readonly blogService: BlogService,
   ) {}
 
+  // 로그인
   @Post('signIn')
   async signIn(@Body() payload: User) {
     const { user_id } = await this.authService.getUserByEmail(payload.email!);
-    const { accessToken, refreshToken } = await this.authService.sign(payload);
+    const { accessToken, refreshToken } = await this.authService.signIn({
+      ...payload,
+      userId: user_id,
+    });
     return {
       accessToken,
       refreshToken,
       userId: user_id,
     };
   }
+
+  // access token 갱신
+  @Post('access')
+  @UseGuards(AccessTokenGuard)
+  rotateAccessToken() {}
 
   @Get('users')
   getAllUser() {

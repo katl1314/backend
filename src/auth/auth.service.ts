@@ -94,13 +94,13 @@ export class AuthService {
       return this.jwtService.verify(token, {
         secret: 'secret_key', // TODO .env에 추가할것.
       });
-    } catch (err: unknown) {
-      console.log('>> error', (err as Error).message);
+    } catch {
       throw new UnauthorizedException('토큰이 유효하지 않습니다.');
     }
   }
 
-  async sign(payload) {
+  // 로그인
+  async signIn(payload) {
     const accessToken = await this.signToken(payload);
     const refreshToken = await this.signToken(payload, true);
     return { accessToken, refreshToken };
@@ -118,5 +118,10 @@ export class AuthService {
         expiresIn: isRefreshToken ? 60 * 60 * 24 * 30 : 60 * 24 * 24,
       },
     );
+  }
+
+  async rotateToken(token: string, isRefresh: boolean = false) {
+    await new Promise((resolve) => resolve(1));
+    console.log(token, isRefresh);
   }
 }

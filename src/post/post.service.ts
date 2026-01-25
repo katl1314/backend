@@ -1,3 +1,4 @@
+import { CommonService, PaginateProps } from '../common/common.service';
 import { CreatePostDto } from './dto/create-post.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { QueryRunner, Repository } from 'typeorm';
@@ -10,6 +11,7 @@ export class PostService {
   constructor(
     @InjectRepository(PostModel)
     private readonly postRepository: Repository<PostModel>,
+    private readonly commonService: CommonService,
   ) {}
 
   getRepository(qr?: QueryRunner) {
@@ -18,8 +20,34 @@ export class PostService {
       : qr.manager.getRepository(PostModel);
   }
 
-  createPost(post: CreatePostDto, qr?: QueryRunner) {
+  /*
+   * @name create
+   * @version 1.0
+   * @description 포스트를 등록하는 함수
+   * @params {CreatePostDto | Y} post 등록할 포스트 객체
+   * @params {QueryRunner | N} qr 트랜잭션을 위한 쿼리러너 객체
+   * @returns
+   * */
+  async create(post: CreatePostDto & { user_id: string }, qr?: QueryRunner) {
     const repo = this.getRepository(qr);
-    return repo.create(post);
+    // 개선 필
+    post.visibility = true; // TODO true or false
+    post.status = 'publish'; // TODO required column
+    const newPost = repo.create(post);
+
+    return await repo.save(newPost);
+  }
+
+  /*
+   * @name getPosts
+   * @version 1.0
+   * @description 포스트 조회하는 함수
+   * @params {PaginateDto | Y} dto 페이징을 위한 객체
+   * @Params {Number | Y} dto.cursor 커서
+   * @Params {Number | N} dto.take 조회할 개수
+   * @returns
+   * */
+  async getPosts(dto: PaginateProps) {
+    return await this.commonService.paginate(dto, this.postRepository);
   }
 }
