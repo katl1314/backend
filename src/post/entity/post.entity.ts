@@ -28,7 +28,7 @@ export class PostModel {
   user_id: string;
 
   @ManyToOne(() => UserModel, (user) => user.posts)
-  @JoinColumn({ name: 'user_id' })
+  @JoinColumn({ name: 'user_id', referencedColumnName: 'user_id' })
   user: UserModel;
 
   @OneToMany(() => PostLikeModel, (like) => like.post)

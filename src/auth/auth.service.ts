@@ -25,7 +25,12 @@ export class AuthService {
   }
 
   async getAllUser() {
-    return await this.authRepository.find();
+    return await this.authRepository.find({
+      relations: {
+        posts: true,
+        blog: true,
+      },
+    });
   }
 
   async getUser(userId: string) {

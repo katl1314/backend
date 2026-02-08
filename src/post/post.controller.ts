@@ -3,6 +3,7 @@ import {
   Body,
   Controller,
   Get,
+  Param,
   ParseIntPipe,
   Post,
   Query,
@@ -28,11 +29,11 @@ export class PostController {
   @UseGuards(AccessTokenGuard)
   @UseInterceptors(TransactionInterceptor)
   createPost(
-    @Req() req: Request & { qr: QueryRunner; user: { id: string } },
+    @Req() req: Request & { qr: QueryRunner; user: { user_id: string } },
     @Body() post: CreatePostDto & { tags: string[] },
   ) {
     try {
-      const newPost = { ...post, user_id: req.user.id };
+      const newPost = { ...post, user_id: req.user.user_id };
       return this.postService.create(newPost, req.qr);
     } catch {
       throw new BadRequestException('이미 존재하는 포스트입니다.');
@@ -42,5 +43,10 @@ export class PostController {
   @Get()
   getPosts(@Query('cursor', ParseIntPipe) cursor: number) {
     return this.postService.getPosts({ cursor, take: 10 });
+  }
+
+  @Get(':userId/:path')
+  getPost(@Param('userId') userId: string, @Param('path') path: string) {
+    return this.postService.getPost(userId, path);
   }
 }
