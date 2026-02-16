@@ -23,6 +23,6 @@ export class CommentController {
     @Param('commentId') commentId: string,
     @Req() req: Request & { qr?: QueryRunner },
   ) {
-    console.log(commentId, req);
+    console.log('postComment >> ', commentId, req);
   }
 }
