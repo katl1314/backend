@@ -10,11 +10,3 @@ export const isEmpty = (val: unknown): val is null | undefined => {
     (typeof val === 'object' && Object.keys(val).length === 0)
   );
 };
-
-/*
- * @Description 값이 참 거짓을 의미하는 값인지 확인하는 함수
- *
- */
-export const isBool = (val: unknown): boolean => {
-  return val === true || val === false || val === 'true' || val === 'false';
-};
