@@ -60,7 +60,9 @@ export class PostService {
   async getPost(userId: string, postId: string) {
     const result = await this.postRepository.findOne({
       relations: {
-        user: true,
+        user: {
+          blog: true,
+        },
         tags: true,
       },
       where: {
