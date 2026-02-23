@@ -64,6 +64,8 @@ export class PostService {
           blog: true,
         },
         tags: true,
+        likes: true,
+        comments: true,
       },
       where: {
         user_id: Equal(userId),
