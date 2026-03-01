@@ -7,10 +7,11 @@ import { PostService } from './post.service';
 import { Module } from '@nestjs/common';
 import { AuthModule } from '../auth/auth.module';
 import { CommonModule } from '../common/common.module';
+import { PostLikeModel } from './entity/post_like.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([PostModel, TagModel]),
+    TypeOrmModule.forFeature([PostModel, PostLikeModel, TagModel]),
     AuthModule,
     TagModule,
     CommonModule,

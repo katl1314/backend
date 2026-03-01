@@ -5,12 +5,15 @@ import { Equal, QueryRunner, Repository } from 'typeorm';
 import { PostModel } from './entity/post.entity';
 import { isEmpty } from '../common/util/util';
 import { Injectable } from '@nestjs/common';
+import { PostLikeModel } from './entity/post_like.entity';
 
 @Injectable()
 export class PostService {
   constructor(
     @InjectRepository(PostModel)
     private readonly postRepository: Repository<PostModel>,
+    @InjectRepository(PostLikeModel)
+    private readonly postLikeRepository: Repository<PostLikeModel>,
     private readonly commonService: CommonService,
   ) {}
 
@@ -77,4 +80,14 @@ export class PostService {
 
     return result;
   }
+
+  /*
+   * @name like
+   * @version 1.0
+   * @description 포스트 좋아요 눌렀을때 함수
+   * @Params {string | Y} userId 사용자 ID
+   * @Params {string | N} postId 포스트 ID
+   * @returns
+   * */
+  async post() {}
 }
