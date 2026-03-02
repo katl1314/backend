@@ -1,5 +1,6 @@
-import { NestFactory } from '@nestjs/core';
+import { HttpAdapterHost, NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
+import { HttpExceptionFilter } from './common/exception-filter/http.exception';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -8,6 +9,8 @@ async function bootstrap() {
     origin: 'http://localhost:3000', // 클라이언트 주소
   });
 
+  const { httpAdapter } = app.get(HttpAdapterHost);
+  app.useGlobalFilters(new HttpExceptionFilter(httpAdapter));
   // app.setGlobalPrefix('v1');
   await app.listen(3001);
 }

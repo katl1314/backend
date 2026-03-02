@@ -49,4 +49,14 @@ export class PostController {
   getPost(@Param('userId') userId: string, @Param('path') path: string) {
     return this.postService.getPost(userId, path);
   }
+
+  @Post('/like/:postId')
+  @UseGuards(AccessTokenGuard)
+  createLike(
+    @Req() req: Request & { qr: QueryRunner; user: { user_id: string } },
+    @Param('postId', ParseIntPipe) postId: number,
+  ) {
+    console.log('createLike ------', req, postId);
+    return { status: 'ok' };
+  }
 }
