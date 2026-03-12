@@ -2,6 +2,7 @@ import {
   BadRequestException,
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   ParseIntPipe,
@@ -17,6 +18,7 @@ import { PostService } from './post.service';
 import { QueryRunner } from 'typeorm';
 import { TagService } from '../tag/tag.service';
 import { CreatePostDto } from './dto/create-post.dto';
+import { UserModel } from '../auth/entity/user.entity';
 
 @Controller('post')
 export class PostController {
@@ -50,13 +52,33 @@ export class PostController {
     return this.postService.getPost(userId, path);
   }
 
-  @Post('/like/:postId')
+  // 좋아요 여부 조회
+  @Get(':postId/like/me')
+  @UseGuards(AccessTokenGuard)
+  getLikeById(
+    @Param('postId', ParseIntPipe) postId: number,
+    @Req() req: Request & { user: UserModel },
+  ) {
+    return this.postService.getLike(postId, req.user.id);
+  }
+
+  // 좋아요 추가
+  @Post(':postId/like')
   @UseGuards(AccessTokenGuard)
   createLike(
-    @Req() req: Request & { qr: QueryRunner; user: { user_id: string } },
+    @Req() req: Request & { qr: QueryRunner; user: UserModel },
     @Param('postId', ParseIntPipe) postId: number,
   ) {
-    console.log('createLike ------', req, postId);
-    return { status: 'ok' };
+    return this.postService.doLike(req.user, postId, true);
+  }
+
+  // 좋아요 취소
+  @Delete(':postId/like')
+  @UseGuards(AccessTokenGuard)
+  deleteLike(
+    @Req() req: Request & { qr: QueryRunner; user: UserModel },
+    @Param('postId', ParseIntPipe) postId: number,
+  ) {
+    return this.postService.doLike(req.user, postId, false);
   }
 }
