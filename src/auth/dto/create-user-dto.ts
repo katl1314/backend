@@ -6,4 +6,7 @@ export class CreateUserDto extends PickType(UserModel, [
   'provider',
   'user_id',
   'email',
-]) {}
+]) {
+  user_name?: string;
+  password?: string;
+}

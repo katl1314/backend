@@ -46,6 +46,10 @@ export class UserModel {
   @Column()
   avatar_url: string;
 
+  // 비밀번호 (이메일 로그인 전용, OAuth 사용자는 null)
+  @Column({ type: 'varchar', nullable: true, select: false })
+  password: string | null;
+
   @Column({ type: 'enum', enum: StatusEnum, default: StatusEnum.active })
   status: StatusEnum;
 

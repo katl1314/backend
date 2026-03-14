@@ -6,9 +6,10 @@ import {
 import { CreateUserDto } from './dto/create-user-dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { QueryRunner, Repository } from 'typeorm';
-import { UserModel } from './entity/user.entity';
+import { ProviderEnum, UserModel } from './entity/user.entity';
 import { isEmpty } from '../common/util/util';
 import { JwtService } from '@nestjs/jwt';
+import * as bcrypt from 'bcryptjs';
 
 @Injectable()
 export class AuthService {
@@ -75,11 +76,31 @@ export class AuthService {
   }
 
   async createUser(user: CreateUserDto, qr?: QueryRunner) {
-    // 먼저 사용자 엔티티 인스턴스 생성
     const authRepo = this.getRepository(qr);
+    if (user.password) {
+      user.password = await bcrypt.hash(user.password, 10);
+    }
     const newUser = authRepo.create(user);
     await authRepo.save(newUser);
     return newUser;
+  }
+
+  async signInWithCredentials(email: string, password: string) {
+    const user = await this.authRepository.findOne({
+      where: { email, provider: ProviderEnum.email },
+      select: ['id', 'email', 'user_id', 'user_name', 'avatar_url', 'password'],
+    });
+
+    if (!user || !user.password) {
+      throw new UnauthorizedException('이메일 또는 비밀번호가 올바르지 않습니다.');
+    }
+
+    const isValid = await bcrypt.compare(password, user.password);
+    if (!isValid) {
+      throw new UnauthorizedException('이메일 또는 비밀번호가 올바르지 않습니다.');
+    }
+
+    return user;
   }
 
   // 토큰 추출
