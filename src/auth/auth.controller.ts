@@ -47,8 +47,13 @@ export class AuthController {
 
   // 이메일/비밀번호 로그인
   @Post('signIn/credentials')
-  async signInWithCredentials(@Body() body: { email: string; password: string }) {
-    const user = await this.authService.signInWithCredentials(body.email, body.password);
+  async signInWithCredentials(
+    @Body() body: { email: string; password: string },
+  ) {
+    const user = await this.authService.signInWithCredentials(
+      body.email,
+      body.password,
+    );
     const { accessToken, refreshToken } = await this.authService.signIn({
       email: user.email,
       name: user.user_name,
