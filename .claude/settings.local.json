@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run:*)",
+      "Bash(find \"C:/dev/dev.log/frontend/src\" -type f \\\\\\( -name \"*.tsx\" -o -name \"*.ts\" \\\\\\) | xargs grep -l \"theme\\\\|dark\\\\|toggle\" | head -20)"
+    ]
+  }
+}
