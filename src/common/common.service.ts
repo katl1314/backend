@@ -4,6 +4,7 @@ import {
   Repository,
   FindOptionsWhere,
   LessThanOrEqual,
+  FindOptionsRelations,
 } from 'typeorm';
 import { PostModel } from '../post/entity/post.entity';
 
@@ -18,15 +19,17 @@ export class CommonService {
     dto: PaginateProps,
     repository: Repository<PostModel>,
     where: FindOptionsWhere<PostModel> = {},
+    relations: FindOptionsRelations<PostModel> = {},
   ) {
     // 커서 기반
-    return this.cursorPaginate(dto, repository, where);
+    return this.cursorPaginate(dto, repository, where, relations);
   }
 
   private async cursorPaginate(
     dto: PaginateProps,
     repository: Repository<PostModel>,
     where: FindOptionsWhere<PostModel> = {},
+    relations: FindOptionsRelations<PostModel> = {},
   ) {
     // 1. Where 조건 동적 생성
 
@@ -40,6 +43,7 @@ export class CommonService {
           blog: true,
         },
         tags: true,
+        ...relations,
       },
       take: dto.take + 1,
       order: {

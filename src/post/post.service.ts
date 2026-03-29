@@ -56,7 +56,13 @@ export class PostService {
   async getPosts(dto: PostPaginateProps) {
     // dto내 user_id가 있으면 조건문을 전달한다.
     const where = dto.userId ? { user_id: Equal(dto.userId) } : {};
-    return await this.commonService.paginate(dto, this.postRepository, where);
+    const relations = { comments: true, likes: true };
+    return await this.commonService.paginate(
+      dto,
+      this.postRepository,
+      where,
+      relations,
+    );
   }
 
   /*
