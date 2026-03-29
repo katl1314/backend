@@ -38,7 +38,7 @@ export class PostService {
    * */
   async create(post: CreatePostDto & { user_id: string }, qr?: QueryRunner) {
     const repo = this.getRepository(qr);
-    post.visibility = true; // TODO true or false boolean 개선필요
+    console.log(post.visibility);
     post.status = 'publish'; // TODO required column 개선 필요
     const newPost = repo.create(post);
     return await repo.save(newPost);
