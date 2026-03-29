@@ -124,8 +124,6 @@ export class PostService {
    * @returns
    * */
   async doLike(user: UserModel, postId: number, isLike: boolean) {
-    console.log(user, postId, isLike);
-
     // 포스트를 먼저 찾아야한다.
     const post = await this.postRepository.findOne({
       where: {
