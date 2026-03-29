@@ -43,8 +43,11 @@ export class PostController {
   }
 
   @Get()
-  getPosts(@Query('cursor', ParseIntPipe) cursor: number) {
-    return this.postService.getPosts({ cursor, take: 10 });
+  getPosts(
+    @Query('cursor', ParseIntPipe) cursor: number,
+    @Query('userId') userId: string,
+  ) {
+    return this.postService.getPosts({ cursor, userId, take: 10 });
   }
 
   @Get(':userId/:path')

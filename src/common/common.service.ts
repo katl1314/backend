@@ -14,17 +14,21 @@ export interface PaginateProps {
 
 @Injectable()
 export class CommonService {
-  paginate(dto: PaginateProps, repository: Repository<PostModel>) {
+  paginate(
+    dto: PaginateProps,
+    repository: Repository<PostModel>,
+    where: FindOptionsWhere<PostModel> = {},
+  ) {
     // 커서 기반
-    return this.cursorPaginate(dto, repository);
+    return this.cursorPaginate(dto, repository, where);
   }
 
   private async cursorPaginate(
     dto: PaginateProps,
     repository: Repository<PostModel>,
+    where: FindOptionsWhere<PostModel> = {},
   ) {
     // 1. Where 조건 동적 생성
-    const where: FindOptionsWhere<PostModel> = {};
 
     if (dto.cursor && dto.cursor > 0) {
       where.id = LessThanOrEqual(dto.cursor);

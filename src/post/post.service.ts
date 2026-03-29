@@ -8,6 +8,10 @@ import { Injectable } from '@nestjs/common';
 import { PostLikeModel } from './entity/post_like.entity';
 import { UserModel } from '../auth/entity/user.entity';
 
+interface PostPaginateProps extends PaginateProps {
+  userId?: string;
+}
+
 @Injectable()
 export class PostService {
   constructor(
@@ -49,8 +53,10 @@ export class PostService {
    * @Params {Number | N} dto.take 조회할 개수
    * @returns
    * */
-  async getPosts(dto: PaginateProps) {
-    return await this.commonService.paginate(dto, this.postRepository);
+  async getPosts(dto: PostPaginateProps) {
+    // dto내 user_id가 있으면 조건문을 전달한다.
+    const where = dto.userId ? { user_id: Equal(dto.userId) } : {};
+    return await this.commonService.paginate(dto, this.postRepository, where);
   }
 
   /*
