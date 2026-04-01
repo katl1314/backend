@@ -6,7 +6,7 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   app.enableCors({
     credentials: true, // 쿠키 허용 필수
-    origin: 'http://localhost:3000', // 클라이언트 주소
+    origin: ['http://localhost:3000', 'http://192.168.0.10:3000'], // 클라이언트 주소
   });
 
   const { httpAdapter } = app.get(HttpAdapterHost);
