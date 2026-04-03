@@ -112,11 +112,11 @@ export class PostService {
         },
       });
 
-      console.log(like);
+      console.log('ok', like);
+      return { isLiked: !!like };
+    } catch (err: unknown) {
+      console.log('err', err);
       return { isLike: false };
-      // return { isLiked: !!like };
-    } catch (err) {
-      console.log(err);
     }
   }
 
