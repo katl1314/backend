@@ -7,6 +7,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { Exclude } from 'class-transformer';
 import { PostLikeModel } from '../../post/entity/post_like.entity';
 import { CommentModel } from '../../comment/entity/comment.entity';
 import { BlogModel } from '../../blog/entity/blog.entity';
@@ -47,6 +48,7 @@ export class UserModel {
   avatar_url: string;
 
   // 비밀번호 (이메일 로그인 전용, OAuth 사용자는 null)
+  @Exclude({ toPlainOnly: true })
   @Column({ type: 'varchar', nullable: true, select: false })
   password: string | null;
 

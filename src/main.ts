@@ -1,17 +1,20 @@
-import { HttpAdapterHost, NestFactory } from '@nestjs/core';
-import { AppModule } from './app.module';
+import { HttpAdapterHost, NestFactory, Reflector } from '@nestjs/core';
+import { ClassSerializerInterceptor, ValidationPipe } from '@nestjs/common';
 import { HttpExceptionFilter } from './common/exception-filter/http.exception';
+import { AppModule } from './app.module';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   app.enableCors({
-    credentials: true, // 쿠키 허용 필수
-    origin: ['http://localhost:3000', 'http://192.168.0.10:3000'], // 클라이언트 주소
+    credentials: true,
+    origin: ['http://localhost:3000', 'http://192.168.0.10:3000'],
   });
 
   const { httpAdapter } = app.get(HttpAdapterHost);
   app.useGlobalFilters(new HttpExceptionFilter(httpAdapter));
-  // app.setGlobalPrefix('v1');
+  app.useGlobalPipes(new ValidationPipe({ transform: true }));
+  app.useGlobalInterceptors(new ClassSerializerInterceptor(app.get(Reflector)));
+
   await app.listen(3001);
 }
 bootstrap();

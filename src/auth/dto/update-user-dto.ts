@@ -1,13 +1,11 @@
-export class UpdateUserDto {
-  user_name?: string;
-  avatar_url?: string;
-  description?: string;
-  socials?: {
-    github?: string;
-    twitter?: string;
-    instagram?: string;
-    linkedin?: string;
-    youtube?: string;
-    website?: string;
-  };
-}
+import { PartialType, PickType } from '@nestjs/mapped-types';
+import { UserModel } from '../entity/user.entity';
+
+export class UpdateUserDto extends PartialType(
+  PickType(UserModel, [
+    'user_name',
+    'avatar_url',
+    'description',
+    'socials',
+  ] as const),
+) {}
