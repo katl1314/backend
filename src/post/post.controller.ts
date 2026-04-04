@@ -13,7 +13,10 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { TransactionInterceptor } from '../common/interceptor/transaction.interceptor';
-import { AccessTokenGuard, OptionalAccessTokenGuard } from '../auth/guard/bearer-token.guard';
+import {
+  AccessTokenGuard,
+  OptionalAccessTokenGuard,
+} from '../auth/guard/bearer-token.guard';
 import { PostService } from './post.service';
 import { QueryRunner } from 'typeorm';
 import { TagService } from '../tag/tag.service';
@@ -43,11 +46,16 @@ export class PostController {
   }
 
   @Get()
+  @UseGuards(OptionalAccessTokenGuard)
   getPosts(
     @Query('cursor', ParseIntPipe) cursor: number,
     @Query('userId') userId: string,
+    @Req() req: Request & { user?: UserModel },
   ) {
-    return this.postService.getPosts({ cursor, userId, take: 10 });
+    return this.postService.getPosts(
+      { cursor, userId, take: 10 },
+      req.user?.user_id,
+    );
   }
 
   @Get(':userId/:path')

@@ -18,7 +18,7 @@ export class CommonService {
   paginate(
     dto: PaginateProps,
     repository: Repository<PostModel>,
-    where: FindOptionsWhere<PostModel> = {},
+    where: FindOptionsWhere<PostModel> | FindOptionsWhere<PostModel>[] = {},
     relations: FindOptionsRelations<PostModel> = {},
   ) {
     // 커서 기반
@@ -28,13 +28,16 @@ export class CommonService {
   private async cursorPaginate(
     dto: PaginateProps,
     repository: Repository<PostModel>,
-    where: FindOptionsWhere<PostModel> = {},
+    where: FindOptionsWhere<PostModel> | FindOptionsWhere<PostModel>[] = {},
     relations: FindOptionsRelations<PostModel> = {},
   ) {
     // 1. Where 조건 동적 생성
-
     if (dto.cursor && dto.cursor > 0) {
-      where.id = LessThanOrEqual(dto.cursor);
+      if (Array.isArray(where)) {
+        where = where.map((w) => ({ ...w, id: LessThanOrEqual(dto.cursor) }));
+      } else {
+        where = { ...where, id: LessThanOrEqual(dto.cursor) };
+      }
     }
 
     const options: FindManyOptions<PostModel> = {
