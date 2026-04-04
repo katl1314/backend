@@ -4,7 +4,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Equal, QueryRunner, Repository } from 'typeorm';
 import { PostModel } from './entity/post.entity';
 import { isEmpty } from '../common/util/util';
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { PostLikeModel } from './entity/post_like.entity';
 import { UserModel } from '../auth/entity/user.entity';
 
@@ -52,16 +52,38 @@ export class PostService {
    * @Params {Number | N} dto.take 조회할 개수
    * @returns
    * */
-  async getPosts(dto: PostPaginateProps) {
-    // dto내 user_id가 있으면 조건문을 전달한다.
-    const where = dto.userId ? { user_id: Equal(dto.userId) } : {};
+  async getPosts(dto: PostPaginateProps, requesterId?: string) {
     const relations = { comments: true, likes: true };
+    const where = this.buildVisibilityWhere(dto.userId, requesterId);
     return await this.commonService.paginate(
       dto,
       this.postRepository,
       where,
       relations,
     );
+  }
+
+  private buildVisibilityWhere(userId?: string, requesterId?: string) {
+    if (userId) {
+      const base = { user_id: Equal(userId) };
+      // 본인 프로필 조회 시 비공개 포스트도 포함
+      if (requesterId === userId) {
+        return [
+          { ...base, visibility: true },
+          { ...base, visibility: false },
+        ];
+      }
+      return { ...base, visibility: true };
+    }
+
+    // 글로벌 피드: 공개 포스트 + 내가 작성한 비공개 포스트
+    if (requesterId) {
+      return [
+        { visibility: true },
+        { visibility: false, user_id: Equal(requesterId) },
+      ];
+    }
+    return { visibility: true };
   }
 
   /*
@@ -88,10 +110,10 @@ export class PostService {
       },
     });
 
-    if (!result) return { status: '404', message: '찾을 수 없습니다.' };
+    if (!result) throw new NotFoundException('포스트를 찾을 수 없습니다.');
 
     if (!result.visibility && result.user_id !== requesterId) {
-      return { status: '404', message: '찾을 수 없습니다.' };
+      throw new NotFoundException('포스트를 찾을 수 없습니다.');
     }
 
     return result;
@@ -107,18 +129,14 @@ export class PostService {
    * */
   async getLike(postId: number, userId: string) {
     try {
-      //console.log('getLike --- service', postId, userId);
       const like = await this.postLikeRepository.exists({
         where: {
           post_id: Equal(postId),
           user_id: Equal(userId),
         },
       });
-
-      //console.log('ok', like);
       return { isLiked: !!like };
     } catch {
-      //console.log('err', err);
       return { isLike: false };
     }
   }
@@ -141,7 +159,7 @@ export class PostService {
     });
 
     if (isEmpty(post)) {
-      throw new Error('Not Found');
+      throw new NotFoundException('포스트를 찾을 수 없습니다.');
     }
 
     if (isLike) {
