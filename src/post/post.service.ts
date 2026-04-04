@@ -38,7 +38,6 @@ export class PostService {
    * */
   async create(post: CreatePostDto & { user_id: string }, qr?: QueryRunner) {
     const repo = this.getRepository(qr);
-    console.log(post.visibility);
     post.status = 'publish'; // TODO required column 개선 필요
     const newPost = repo.create(post);
     return await repo.save(newPost);
@@ -73,7 +72,7 @@ export class PostService {
    * @Params {string | N} postId 포스트 ID
    * @returns
    * */
-  async getPost(userId: string, postId: string) {
+  async getPost(userId: string, postId: string, requesterId?: string) {
     const result = await this.postRepository.findOne({
       relations: {
         user: {
@@ -90,6 +89,10 @@ export class PostService {
     });
 
     if (!result) return { status: '404', message: '찾을 수 없습니다.' };
+
+    if (!result.visibility && result.user_id !== requesterId) {
+      return { status: '404', message: '찾을 수 없습니다.' };
+    }
 
     return result;
   }

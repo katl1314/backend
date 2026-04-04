@@ -13,7 +13,7 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { TransactionInterceptor } from '../common/interceptor/transaction.interceptor';
-import { AccessTokenGuard } from '../auth/guard/bearer-token.guard';
+import { AccessTokenGuard, OptionalAccessTokenGuard } from '../auth/guard/bearer-token.guard';
 import { PostService } from './post.service';
 import { QueryRunner } from 'typeorm';
 import { TagService } from '../tag/tag.service';
@@ -51,8 +51,13 @@ export class PostController {
   }
 
   @Get(':userId/:path')
-  getPost(@Param('userId') userId: string, @Param('path') path: string) {
-    return this.postService.getPost(userId, path);
+  @UseGuards(OptionalAccessTokenGuard)
+  getPost(
+    @Param('userId') userId: string,
+    @Param('path') path: string,
+    @Req() req: Request & { user?: UserModel },
+  ) {
+    return this.postService.getPost(userId, path, req.user?.user_id);
   }
 
   // 좋아요 여부 조회

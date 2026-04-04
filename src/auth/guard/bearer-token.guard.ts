@@ -71,3 +71,14 @@ export class AccessTokenGuard extends BearerTokenGuard {
 export class RefreshTokenGuard extends BearerTokenGuard {
   readonly expectedTokenType = 'refresh' as const;
 }
+
+@Injectable()
+export class OptionalAccessTokenGuard extends BearerTokenGuard {
+  readonly expectedTokenType = 'access' as const;
+
+  async canActivate(context: ExecutionContext): Promise<boolean> {
+    const req = context.switchToHttp().getRequest<IRequest>();
+    if (!req.headers.authorization) return true;
+    return super.canActivate(context);
+  }
+}
