@@ -56,6 +56,21 @@ export class UserModel {
   @Column({ enum: ProviderEnum, type: 'enum', default: ProviderEnum.email })
   provider: ProviderEnum;
 
+  // 프로필 소개
+  @Column({ type: 'text', nullable: true })
+  description: string | null;
+
+  // 소셜 링크
+  @Column({ type: 'jsonb', nullable: true })
+  socials: {
+    github?: string;
+    twitter?: string;
+    instagram?: string;
+    linkedin?: string;
+    youtube?: string;
+    website?: string;
+  } | null;
+
   @OneToOne(() => BlogModel, (blog) => blog.user, { onDelete: 'CASCADE' })
   blog: BlogModel;
 

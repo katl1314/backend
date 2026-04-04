@@ -104,7 +104,7 @@ export class PostService {
    * */
   async getLike(postId: number, userId: string) {
     try {
-      console.log('getLike --- service', postId, userId);
+      //console.log('getLike --- service', postId, userId);
       const like = await this.postLikeRepository.exists({
         where: {
           post_id: Equal(postId),
@@ -112,10 +112,10 @@ export class PostService {
         },
       });
 
-      console.log('ok', like);
+      //console.log('ok', like);
       return { isLiked: !!like };
-    } catch (err: unknown) {
-      console.log('err', err);
+    } catch {
+      //console.log('err', err);
       return { isLike: false };
     }
   }

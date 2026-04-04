@@ -4,9 +4,12 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user-dto';
+import { UpdateUserDto } from './dto/update-user-dto';
+import { UpdateUserSettingsDto } from './dto/update-user-settings-dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { QueryRunner, Repository } from 'typeorm';
-import { ProviderEnum, UserModel } from './entity/user.entity';
+import { ProviderEnum, StatusEnum, UserModel } from './entity/user.entity';
+import { UserSettingsModel } from './entity/user_settings.entity';
 import { isEmpty } from '../common/util/util';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcryptjs';
@@ -16,6 +19,8 @@ export class AuthService {
   constructor(
     @InjectRepository(UserModel)
     private readonly authRepository: Repository<UserModel>,
+    @InjectRepository(UserSettingsModel)
+    private readonly settingsRepository: Repository<UserSettingsModel>,
     private readonly jwtService: JwtService,
   ) {}
 
@@ -149,5 +154,42 @@ export class AuthService {
   async rotateToken(token: string, isRefresh: boolean = false) {
     await new Promise((resolve) => resolve(1));
     console.log(token, isRefresh);
+  }
+
+  async updateUser(userId: string, dto: UpdateUserDto) {
+    const user = await this.authRepository.findOne({
+      where: { user_id: userId },
+    });
+    if (!user) throw new NotFoundException();
+    Object.assign(user, dto);
+    return await this.authRepository.save(user);
+  }
+
+  async updateSettings(userId: string, dto: UpdateUserSettingsDto) {
+    const user = await this.authRepository.findOne({
+      where: { user_id: userId },
+    });
+    if (!user) throw new NotFoundException();
+
+    let settings = await this.settingsRepository.findOne({
+      where: { user: { id: user.id } },
+    });
+
+    if (!settings) {
+      settings = this.settingsRepository.create({ user, ...dto });
+    } else {
+      Object.assign(settings, dto);
+    }
+
+    return await this.settingsRepository.save(settings);
+  }
+
+  async withdrawUser(userId: string) {
+    const user = await this.authRepository.findOne({
+      where: { user_id: userId },
+    });
+    if (!user) throw new NotFoundException();
+    user.status = StatusEnum.withdrawn;
+    return await this.authRepository.save(user);
   }
 }

@@ -2,6 +2,7 @@ import { CommentModel } from './comment/entity/comment.entity';
 import { PostLikeModel } from './post/entity/post_like.entity';
 import { CommentModule } from './comment/comment.module';
 import { UserModel } from './auth/entity/user.entity';
+import { UserSettingsModel } from './auth/entity/user_settings.entity';
 import { BlogModel } from './blog/entity/blog.entity';
 import { PostModel } from './post/entity/post.entity';
 import { TagModel } from './tag/entity/tag.entity';
@@ -31,6 +32,7 @@ import { CommonModule } from './common/common.module';
       password: process.env.DB_PASSWORD,
       entities: [
         UserModel,
+        UserSettingsModel,
         BlogModel,
         PostModel,
         CommentModel,

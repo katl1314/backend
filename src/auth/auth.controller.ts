@@ -1,8 +1,10 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
+  Patch,
   Post,
   Req,
   UseGuards,
@@ -11,6 +13,8 @@ import {
 import { TransactionInterceptor } from '../common/interceptor/transaction.interceptor';
 import { CreateBlogDTO } from '../blog/dto/create-blog-dto';
 import { CreateUserDto } from './dto/create-user-dto';
+import { UpdateUserDto } from './dto/update-user-dto';
+import { UpdateUserSettingsDto } from './dto/update-user-settings-dto';
 import { BlogService } from '../blog/blog.service';
 import { AuthService } from './auth.service';
 import { QueryRunner } from 'typeorm';
@@ -86,6 +90,33 @@ export class AuthController {
   @Get('users/email/:email')
   getUserByEmail(@Param('email') email: string) {
     return this.authService.getUserByEmail(email);
+  }
+
+  // 프로필 업데이트 (user_name, avatar_url, description, socials)
+  @Patch('users/:userId')
+  @UseGuards(AccessTokenGuard)
+  updateUser(
+    @Param('userId') userId: string,
+    @Body() dto: UpdateUserDto,
+  ) {
+    return this.authService.updateUser(userId, dto);
+  }
+
+  // 앱 설정 업데이트 (theme, notifications, extra)
+  @Patch('users/:userId/settings')
+  @UseGuards(AccessTokenGuard)
+  updateSettings(
+    @Param('userId') userId: string,
+    @Body() dto: UpdateUserSettingsDto,
+  ) {
+    return this.authService.updateSettings(userId, dto);
+  }
+
+  // 회원 탈퇴 (status → WITHDRAWN)
+  @Delete('users/:userId')
+  @UseGuards(AccessTokenGuard)
+  withdrawUser(@Param('userId') userId: string) {
+    return this.authService.withdrawUser(userId);
   }
 
   @Post('users')
