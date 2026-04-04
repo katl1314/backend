@@ -123,7 +123,7 @@ export class AuthService {
   verifyToken(token: string): unknown {
     try {
       return this.jwtService.verify(token, {
-        secret: 'secret_key', // TODO .env에 추가할것.
+        secret: process.env.AUTH_SECRET,
       });
     } catch {
       throw new UnauthorizedException('토큰이 유효하지 않습니다.');
@@ -145,7 +145,7 @@ export class AuthService {
         type: isRefreshToken ? 'refresh' : 'access',
       },
       {
-        secret: 'secret_key',
+        secret: process.env.AUTH_SECRET,
         expiresIn: isRefreshToken ? 60 * 60 * 24 * 30 : 60 * 24 * 24,
       },
     );

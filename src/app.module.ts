@@ -25,7 +25,7 @@ import { CommonModule } from './common/common.module';
     }),
     TypeOrmModule.forRoot({
       type: 'postgres',
-      host: '127.0.0.1',
+      host: process.env.DB_HOST ?? '127.0.0.1',
       port: 5432,
       database: process.env.DB_NAME,
       username: process.env.DB_USERNAME,
