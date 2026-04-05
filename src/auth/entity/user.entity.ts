@@ -83,7 +83,7 @@ export class UserModel {
   likes: PostLikeModel[];
 
   @OneToMany(() => CommentModel, (comment) => comment.user)
-  comments: CommentModel;
+  comments: CommentModel[];
 
   @CreateDateColumn()
   created_at: Date;
