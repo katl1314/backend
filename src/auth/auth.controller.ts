@@ -95,11 +95,15 @@ export class AuthController {
   // 프로필 업데이트 (user_name, avatar_url, description, socials)
   @Patch('users/:userId')
   @UseGuards(AccessTokenGuard)
-  updateUser(
-    @Param('userId') userId: string,
-    @Body() dto: UpdateUserDto,
-  ) {
+  updateUser(@Param('userId') userId: string, @Body() dto: UpdateUserDto) {
     return this.authService.updateUser(userId, dto);
+  }
+
+  // 앱 설정 조회
+  @Get('users/:userId/settings')
+  @UseGuards(AccessTokenGuard)
+  getSettings(@Param('userId') userId: string) {
+    return this.authService.getSettings(userId);
   }
 
   // 앱 설정 업데이트 (theme, notifications, extra)

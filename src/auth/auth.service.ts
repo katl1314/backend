@@ -97,12 +97,16 @@ export class AuthService {
     });
 
     if (!user || !user.password) {
-      throw new UnauthorizedException('이메일 또는 비밀번호가 올바르지 않습니다.');
+      throw new UnauthorizedException(
+        '이메일 또는 비밀번호가 올바르지 않습니다.',
+      );
     }
 
     const isValid = await bcrypt.compare(password, user.password);
     if (!isValid) {
-      throw new UnauthorizedException('이메일 또는 비밀번호가 올바르지 않습니다.');
+      throw new UnauthorizedException(
+        '이메일 또는 비밀번호가 올바르지 않습니다.',
+      );
     }
 
     return user;
@@ -163,6 +167,25 @@ export class AuthService {
     if (!user) throw new NotFoundException();
     Object.assign(user, dto);
     return await this.authRepository.save(user);
+  }
+
+  async getSettings(userId: string) {
+    const user = await this.authRepository.findOne({
+      where: { user_id: userId },
+    });
+    if (!user) throw new NotFoundException();
+
+    const settings = await this.settingsRepository.findOne({
+      where: { user: { id: user.id } },
+    });
+
+    return (
+      settings ?? {
+        theme: 'SYSTEM',
+        comment_notification: true,
+        update_notification: true,
+      }
+    );
   }
 
   async updateSettings(userId: string, dto: UpdateUserSettingsDto) {
