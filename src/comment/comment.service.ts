@@ -159,7 +159,24 @@ export class CommentService {
     if (comment.user_id !== userId)
       throw new ForbiddenException('본인 댓글만 삭제할 수 있습니다.');
 
-    await this.commentRepository.softDelete({ id: commentId });
+    await this.softDeleteWithChildren(commentId);
     return { id: commentId };
+  }
+
+  /**
+   * 댓글과 모든 하위 댓글을 재귀적으로 soft delete한다.
+   * 자식을 먼저 삭제한 뒤 부모를 삭제한다.
+   */
+  private async softDeleteWithChildren(commentId: string): Promise<void> {
+    const children = await this.commentRepository.find({
+      where: { parent_id: Equal(commentId) },
+      select: ['id'],
+    });
+
+    for (const child of children) {
+      await this.softDeleteWithChildren(child.id);
+    }
+
+    await this.commentRepository.softDelete({ id: commentId });
   }
 }
