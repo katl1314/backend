@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   Body,
+  ConflictException,
   Controller,
   Delete,
   Get,
@@ -18,10 +19,11 @@ import {
   OptionalAccessTokenGuard,
 } from '../auth/guard/bearer-token.guard';
 import { PostService } from './post.service';
-import { QueryRunner } from 'typeorm';
+import { QueryFailedError, QueryRunner } from 'typeorm';
 import { TagService } from '../tag/tag.service';
 import { CreatePostDto } from './dto/create-post.dto';
 import { UserModel } from '../auth/entity/user.entity';
+import { DB_ERROR_CODE } from '../common/const/db-error-code.const';
 
 @Controller('post')
 export class PostController {
@@ -33,15 +35,22 @@ export class PostController {
   @Post()
   @UseGuards(AccessTokenGuard)
   @UseInterceptors(TransactionInterceptor)
-  createPost(
+  async createPost(
     @Req() req: Request & { qr: QueryRunner; user: { user_id: string } },
     @Body() post: CreatePostDto & { tags: string[] },
   ) {
     try {
       const newPost = { ...post, user_id: req.user.user_id };
-      return this.postService.create(newPost, req.qr);
-    } catch {
-      throw new BadRequestException('이미 존재하는 포스트입니다.');
+      return await this.postService.create(newPost, req.qr);
+    } catch (e: unknown) {
+      if (
+        e instanceof QueryFailedError &&
+        (e.driverError as { code?: string }).code ===
+          DB_ERROR_CODE.UNIQUE_VIOLATION
+      ) {
+        throw new ConflictException('이미 동일한 URL의 포스트가 존재합니다.');
+      }
+      throw new BadRequestException('포스트 등록 중 오류가 발생하였습니다.');
     }
   }
 
