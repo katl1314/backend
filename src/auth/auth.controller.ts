@@ -18,7 +18,11 @@ import { UpdateUserSettingsDto } from './dto/update-user-settings-dto';
 import { BlogService } from '../blog/blog.service';
 import { AuthService } from './auth.service';
 import { QueryRunner } from 'typeorm';
-import { AccessTokenGuard } from './guard/bearer-token.guard';
+import {
+  AccessTokenGuard,
+  RefreshTokenGuard,
+  TokenPayload,
+} from './guard/bearer-token.guard';
 
 interface User {
   id?: string;
@@ -69,8 +73,10 @@ export class AuthController {
 
   // access token 갱신
   @Post('access')
-  @UseGuards(AccessTokenGuard)
-  rotateAccessToken() {}
+  @UseGuards(RefreshTokenGuard)
+  async rotateAccessToken(@Req() req: Request & { tokenInfo: TokenPayload }) {
+    return await this.authService.rotateToken(req);
+  }
 
   @Get('users')
   getAllUser() {

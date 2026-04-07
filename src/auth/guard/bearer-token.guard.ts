@@ -14,7 +14,7 @@ interface IRequest extends Request {
   tokenType?: string;
 }
 
-interface TokenPayload {
+export interface TokenPayload {
   id: string;
   name: string;
   email: string;

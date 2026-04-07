@@ -13,6 +13,7 @@ import { UserSettingsModel } from './entity/user_settings.entity';
 import { isEmpty } from '../common/util/util';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcryptjs';
+import { TokenPayload } from './guard/bearer-token.guard';
 
 @Injectable()
 export class AuthService {
@@ -155,9 +156,12 @@ export class AuthService {
     );
   }
 
-  async rotateToken(token: string, isRefresh: boolean = false) {
-    await new Promise((resolve) => resolve(1));
-    console.log(token, isRefresh);
+  async rotateToken(
+    req: Request & { tokenInfo: TokenPayload },
+    isRefreshToken: boolean = false,
+  ) {
+    const accessToken = await this.signToken(req.tokenInfo, isRefreshToken);
+    return { accessToken };
   }
 
   async updateUser(userId: string, dto: UpdateUserDto) {
