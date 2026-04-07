@@ -7,6 +7,7 @@ import { isEmpty } from '../common/util/util';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PostLikeModel } from './entity/post_like.entity';
 import { UserModel } from '../auth/entity/user.entity';
+import { TagModel } from '../tag/entity/tag.entity';
 
 interface PostPaginateProps extends PaginateProps {
   userId?: string;
@@ -36,7 +37,10 @@ export class PostService {
    * @params {QueryRunner | N} qr 트랜잭션을 위한 쿼리러너 객체
    * @returns
    * */
-  async create(post: CreatePostDto & { user_id: string }, qr?: QueryRunner) {
+  async create(
+    post: CreatePostDto & { user_id: string; tags?: TagModel[] },
+    qr?: QueryRunner,
+  ) {
     const repo = this.getRepository(qr);
     post.status = 'publish'; // TODO required column 개선 필요
     const newPost = repo.create(post);

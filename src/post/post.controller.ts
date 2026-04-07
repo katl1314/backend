@@ -22,6 +22,7 @@ import { PostService } from './post.service';
 import { QueryFailedError, QueryRunner } from 'typeorm';
 import { TagService } from '../tag/tag.service';
 import { CreatePostDto } from './dto/create-post.dto';
+import { PostModel } from './entity/post.entity';
 import { UserModel } from '../auth/entity/user.entity';
 import { DB_ERROR_CODE } from '../common/const/db-error-code.const';
 
@@ -39,9 +40,19 @@ export class PostController {
     @Req() req: Request & { qr: QueryRunner; user: { user_id: string } },
     @Body() post: CreatePostDto & { tags: string[] },
   ) {
+    const { qr, user } = req as unknown as {
+      qr: QueryRunner;
+      user: { user_id: string };
+    };
     try {
-      const newPost = { ...post, user_id: req.user.user_id };
-      return await this.postService.create(newPost, req.qr);
+      const tags = await this.tagService.findOrCreateMany(post.tags ?? [], qr);
+      const newPost: PostModel = await this.postService.create(
+        { ...post, user_id: user.user_id, tags },
+        qr,
+      );
+
+      const callbackUrl = `/@${user.user_id}${newPost.path}`;
+      return { post: newPost, callbackUrl };
     } catch (e: unknown) {
       if (
         e instanceof QueryFailedError &&

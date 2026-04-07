@@ -17,7 +17,22 @@ export class TagService {
       : qr.manager.getRepository(TagModel);
   }
 
-  createTag(tag: any) {
-    console.log(tag);
+  async findOrCreateMany(
+    tagNames: string[],
+    qr?: QueryRunner,
+  ): Promise<TagModel[]> {
+    const repo = this.getRepository(qr);
+    const tags: TagModel[] = [];
+
+    for (const name of tagNames) {
+      let tag = await repo.findOne({ where: { name } });
+      if (!tag) {
+        tag = repo.create({ name });
+        await repo.save(tag);
+      }
+      tags.push(tag);
+    }
+
+    return tags;
   }
 }
