@@ -1,0 +1,23 @@
+name: Deploy Backend
+
+on:
+  push:
+    branches:
+      - develop
+
+jobs:
+  deploy:
+    runs-on: self-hosted
+
+    steps:
+      - name: 코드 최신화
+        run: |
+          cd c:/dev/dev.log/backend
+          git pull origin develop
+
+      - name: 백엔드 컨테이너 재빌드
+        run: |
+          cd c:/dev/dev.log
+          docker compose build --no-cache backend
+          docker compose up -d backend
+          docker image prune -f
