@@ -1,10 +1,14 @@
 import { CommonService, PaginateProps } from '../common/common.service';
 import { CreatePostDto } from './dto/create-post.dto';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Equal, QueryRunner, Repository } from 'typeorm';
+import { Equal, FindOptionsWhere, QueryRunner, Repository } from 'typeorm';
 import { PostModel } from './entity/post.entity';
 import { isEmpty } from '../common/util/util';
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { PostLikeModel } from './entity/post_like.entity';
 import { UserModel } from '../auth/entity/user.entity';
 import { TagModel } from '../tag/entity/tag.entity';
@@ -45,6 +49,19 @@ export class PostService {
     post.status = 'publish'; // TODO required column 개선 필요
     const newPost = repo.create(post);
     return await repo.save(newPost);
+  }
+
+  async delete(id: number, user_id: string, qr?: QueryRunner) {
+    const repo = this.getRepository(qr);
+    const _where: FindOptionsWhere<PostModel> = {
+      id,
+      user_id,
+    };
+    const isExist = await repo.exists({ where: _where });
+
+    if (!isExist) throw new BadRequestException('post가 존재하지 않습니다.');
+
+    return await repo.delete(_where);
   }
 
   /*

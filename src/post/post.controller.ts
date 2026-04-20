@@ -101,6 +101,35 @@ export class PostController {
   }
 
   /**
+   * 포스트를 경로 기반으로 삭제한다.
+   *
+   * @remarks
+   * 본인 포스트만 삭제할 수 있으며, 트랜잭션 내에서 처리된다.
+   *
+   * @param req    - 인증된 사용자 정보 및 `QueryRunner`
+   * @param postId - 포스트의 ID
+   * @returns 삭제 처리 결과
+   *
+   * @todo 실제 삭제 로직 구현 (현재 stub)
+   */
+  @Delete(':postId')
+  @UseGuards(AccessTokenGuard)
+  @UseInterceptors(TransactionInterceptor)
+  async deletePost(
+    @Req() req: IRequest,
+    @Param('postId', ParseIntPipe) postId: number,
+  ) {
+    const { qr, user } = req as unknown as {
+      qr: QueryRunner;
+      user: { user_id: string };
+    };
+
+    const result = await this.postService.delete(postId, user.user_id, qr);
+    console.log(result);
+    return { status: 'ok' };
+  }
+
+  /**
    * 포스트 목록을 커서 페이지네이션으로 조회한다.
    *
    * @remarks
