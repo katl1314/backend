@@ -26,6 +26,28 @@ import { PostModel } from './entity/post.entity';
 import { UserModel } from '../auth/entity/user.entity';
 import { DB_ERROR_CODE } from '../common/const/db-error-code.const';
 
+interface IRequest extends Request {
+  qr: QueryRunner;
+  user: UserModel & { user_id: string };
+}
+
+/**
+ * 포스트 API 컨트롤러.
+ *
+ * @remarks
+ * Base URL: `/post`
+ *
+ * [공개 / 선택 인증]
+ * - `GET    /post`                  포스트 목록 조회 (커서 페이지네이션)
+ * - `GET    /post/:userId/:path`    단일 포스트 조회 (경로 기반)
+ *
+ * [인증 필요]
+ * - `POST   /post`                  포스트 작성 (태그 포함, 트랜잭션)
+ * - `DELETE /post/:userId/:path`    포스트 삭제 (트랜잭션, WIP)
+ * - `GET    /post/:postId/like/me`  현재 사용자의 좋아요 여부 조회
+ * - `POST   /post/:postId/like`     좋아요 등록
+ * - `DELETE /post/:postId/like`     좋아요 취소
+ */
 @Controller('post')
 export class PostController {
   constructor(
@@ -33,11 +55,24 @@ export class PostController {
     private readonly tagService: TagService,
   ) {}
 
+  /**
+   * 포스트를 생성한다.
+   *
+   * @remarks
+   * 태그는 `TagService.findOrCreateMany`로 기존 태그를 재사용하거나 신규 생성한다.
+   * 전체 로직은 `TransactionInterceptor`가 주입한 `QueryRunner` 트랜잭션 내에서 처리된다.
+   *
+   * @param req  - 인증된 사용자 정보 및 `QueryRunner`가 주입된 요청 객체
+   * @param post - 포스트 본문 DTO 및 태그 이름 배열
+   * @returns 생성된 포스트와 리다이렉트용 `callbackUrl` (`/@{userId}{path}`)
+   * @throws {ConflictException} 동일 사용자의 동일 URL(path) 중복 등록 시 (unique 위반)
+   * @throws {BadRequestException} 그 외 포스트 생성 중 오류 발생 시
+   */
   @Post()
   @UseGuards(AccessTokenGuard)
   @UseInterceptors(TransactionInterceptor)
   async createPost(
-    @Req() req: Request & { qr: QueryRunner; user: { user_id: string } },
+    @Req() req: IRequest,
     @Body() post: CreatePostDto & { tags: string[] },
   ) {
     const { qr, user } = req as unknown as {
@@ -65,12 +100,24 @@ export class PostController {
     }
   }
 
+  /**
+   * 포스트 목록을 커서 페이지네이션으로 조회한다.
+   *
+   * @remarks
+   * 인증은 선택이며, 로그인 상태인 경우 현재 사용자의 좋아요 여부 등
+   * 개인화된 필드를 함께 내려준다. 페이지 크기는 10으로 고정한다.
+   *
+   * @param cursor - 마지막으로 조회한 포스트 ID (0이면 처음부터)
+   * @param userId - 특정 사용자의 포스트만 조회할 때 지정
+   * @param req    - 인증된 사용자 정보 (선택)
+   * @returns 커서 페이지네이션 결과 (`{ data, hasNext, cursor, count }`)
+   */
   @Get()
   @UseGuards(OptionalAccessTokenGuard)
   getPosts(
     @Query('cursor', ParseIntPipe) cursor: number,
     @Query('userId') userId: string,
-    @Req() req: Request & { user?: UserModel },
+    @Req() req: IRequest,
   ) {
     return this.postService.getPosts(
       { cursor, userId, take: 10 },
@@ -78,41 +125,70 @@ export class PostController {
     );
   }
 
+  /**
+   * 단일 포스트를 경로 기반으로 조회한다.
+   *
+   * @remarks
+   * 인증은 선택이며, 로그인 상태인 경우 좋아요 여부 등 개인화 필드를 포함한다.
+   *
+   * @param userId - 포스트 작성자의 user_id
+   * @param path   - 포스트 URL path
+   * @param req    - 인증된 사용자 정보 (선택)
+   * @returns 단일 포스트 상세 정보
+   */
   @Get(':userId/:path')
   @UseGuards(OptionalAccessTokenGuard)
   getPost(
     @Param('userId') userId: string,
     @Param('path') path: string,
-    @Req() req: Request & { user?: UserModel },
+    @Req() req: IRequest,
   ) {
     return this.postService.getPost(userId, path, req.user?.user_id);
   }
 
-  // 좋아요 여부 조회
+  /**
+   * 현재 로그인한 사용자가 해당 포스트에 좋아요를 눌렀는지 조회한다.
+   *
+   * @param postId - 대상 포스트 ID
+   * @param req    - 인증된 사용자 정보
+   * @returns 좋아요 여부 및 관련 메타데이터
+   */
   @Get(':postId/like/me')
   @UseGuards(AccessTokenGuard)
   getLikeById(
     @Param('postId', ParseIntPipe) postId: number,
-    @Req() req: Request & { user: UserModel },
+    @Req() req: IRequest,
   ) {
     return this.postService.getLike(postId, req.user.id);
   }
 
-  // 좋아요 추가
+  /**
+   * 포스트에 좋아요를 등록한다.
+   *
+   * @param req    - 인증된 사용자 정보 및 `QueryRunner`
+   * @param postId - 대상 포스트 ID
+   * @returns 좋아요 등록 결과
+   */
   @Post(':postId/like')
   @UseGuards(AccessTokenGuard)
   createLike(
-    @Req() req: Request & { qr: QueryRunner; user: UserModel },
+    @Req() req: IRequest,
     @Param('postId', ParseIntPipe) postId: number,
   ) {
     return this.postService.doLike(req.user, postId, true);
   }
 
-  // 좋아요 취소
+  /**
+   * 포스트의 좋아요를 취소한다.
+   *
+   * @param req    - 인증된 사용자 정보 및 `QueryRunner`
+   * @param postId - 대상 포스트 ID
+   * @returns 좋아요 취소 결과
+   */
   @Delete(':postId/like')
   @UseGuards(AccessTokenGuard)
   deleteLike(
-    @Req() req: Request & { qr: QueryRunner; user: UserModel },
+    @Req() req: IRequest,
     @Param('postId', ParseIntPipe) postId: number,
   ) {
     return this.postService.doLike(req.user, postId, false);
