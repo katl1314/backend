@@ -3,7 +3,7 @@ import {
   FindManyOptions,
   Repository,
   FindOptionsWhere,
-  LessThanOrEqual,
+  LessThan,
   FindOptionsRelations,
 } from 'typeorm';
 import { PostModel } from '../post/entity/post.entity';
@@ -34,9 +34,9 @@ export class CommonService {
     // 1. Where 조건 동적 생성
     if (dto.cursor && dto.cursor > 0) {
       if (Array.isArray(where)) {
-        where = where.map((w) => ({ ...w, id: LessThanOrEqual(dto.cursor) }));
+        where = where.map((w) => ({ ...w, id: LessThan(dto.cursor) }));
       } else {
-        where = { ...where, id: LessThanOrEqual(dto.cursor) };
+        where = { ...where, id: LessThan(dto.cursor) };
       }
     }
 
@@ -60,14 +60,14 @@ export class CommonService {
     const hasNext = posts.length > dto.take; // 다음 아이템 여부
     const data = posts.slice(0, dto.take);
 
-    // 마지막 아이템의 ID를 다음 커서로 지정
+    // 마지막 아이템의 ID를 다음 커서로 지정 (hasNext가 true일 때만)
     const lastItem = data.length > 0 ? data[data.length - 1] : null;
 
     return {
       data,
       hasNext,
       cursor: {
-        after: lastItem?.id ?? null,
+        after: hasNext ? lastItem?.id : null,
       },
       count: data.length,
     };
