@@ -3,7 +3,7 @@ import {
   FindManyOptions,
   Repository,
   FindOptionsWhere,
-  LessThanOrEqual,
+  LessThan,
   FindOptionsRelations,
 } from 'typeorm';
 import { PostModel } from '../post/entity/post.entity';
@@ -34,9 +34,9 @@ export class CommonService {
     // 1. Where 조건 동적 생성
     if (dto.cursor && dto.cursor > 0) {
       if (Array.isArray(where)) {
-        where = where.map((w) => ({ ...w, id: LessThanOrEqual(dto.cursor) }));
+        where = where.map((w) => ({ ...w, id: LessThan(dto.cursor) }));
       } else {
-        where = { ...where, id: LessThanOrEqual(dto.cursor) };
+        where = { ...where, id: LessThan(dto.cursor) };
       }
     }
 
